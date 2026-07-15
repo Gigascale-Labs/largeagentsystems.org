@@ -9,6 +9,7 @@ import { Disciplines } from "./components/disciplines";
 import { FocusAreas } from "./components/focus-areas";
 import { OpenQuestions } from "./components/open-questions";
 import { Barriers } from "./components/barriers";
+import { FieldMap } from "./components/field-map";
 import { Join } from "./components/join";
 import { Footer } from "./components/footer";
 
@@ -42,6 +43,7 @@ export default function Home() {
         />
         <OpenQuestions />
         <Barriers />
+        <FieldMap />
 
         <Join />
       </main>

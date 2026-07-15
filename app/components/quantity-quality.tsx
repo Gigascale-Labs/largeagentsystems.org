@@ -7,6 +7,10 @@ const CARDS = [
       "Historically dominant focus of AI safety and governance.",
       "Strong political and regulatory attention.",
     ],
+    source: "Amodei et al., 2016",
+    sourceExcerpt:
+      "The problem of accidents in machine learning systems, defined as unintended and harmful behavior that may emerge from poor design of real-world AI systems.",
+    url: "https://arxiv.org/abs/1606.06565",
   },
   {
     title: "Multi-Agent System",
@@ -16,10 +20,10 @@ const CARDS = [
       "A focus of safety and governance research since 2021.",
       "Emerging regulatory attention.",
     ],
-    source: "Bandi et al., 2025",
+    source: "Hammond et al., 2025",
     sourceExcerpt:
-      "The term agentic AI refers to a multi-agent system where specialized agents collaborate, coordinate, and plan to achieve complex, high-level objectives.",
-    url: "https://doi.org/10.3390/fi17090404",
+      "Today, AI systems are beginning to autonomously interact with one another and adapt their behaviour accordingly, forming multi-agent systems.",
+    url: "https://arxiv.org/abs/2502.14143",
   },
   {
     title: "Large Agent System",

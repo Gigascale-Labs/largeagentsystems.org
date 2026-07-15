@@ -17,8 +17,9 @@ export function ComplexSystem() {
           <p>
             Human systems were designed for humans. Large-scale changes to
             the participant mix on large systems has historically led to
-            sudden, unforeseen, severe systemic failures — including the
-            GFC, the 2010 Flash Crash, and Cambridge Analytica.
+            sudden, unforeseen, severe systemic failures - including the
+            GFC, the 2010 Flash Crash, and political polarisation, partially
+            attributed to foreign interference using bot farms.
           </p>
           <p>
             In the age of agentic AI, those changes could be catastrophic. A

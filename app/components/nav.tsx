@@ -25,7 +25,7 @@ export function Nav() {
             href="#join"
             className="shrink-0 border border-foreground px-3 py-1.5 text-foreground transition-colors hover:border-accent hover:text-accent"
           >
-            Join
+            Join now
           </a>
         </nav>
       </div>
