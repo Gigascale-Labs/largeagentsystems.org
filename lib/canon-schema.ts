@@ -88,6 +88,17 @@ export interface CanonEntry extends CanonDimensions {
    * the corpus's existing `summary` field alone (`summary-only`). All 45
    * corpus entries are currently `summary-only`. */
   tag_confidence: TagConfidence;
+  /**
+   * Institutions represented among the paper's authors, semicolon-separated,
+   * open-ended (not a closed set like the six dimensions above). Not part
+   * of any of the three spec files — added to let the Research Agendas
+   * section (Task C) cross-correlate informal author-collaboration
+   * clusters against formal institutional affiliation. Researched via web
+   * search per paper, not fetched from a structured API; blank where no
+   * confident affiliation was found (e.g. no stated affiliation, or an
+   * institutional creator with no named authors).
+   */
+  institutions?: string[];
 }
 
 export type SubmissionStatus = "pending" | "approved" | "rejected";

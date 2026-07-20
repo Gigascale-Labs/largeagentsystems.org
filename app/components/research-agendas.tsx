@@ -1,6 +1,8 @@
 const CLUSTERS = [
   {
     name: "Tomašev, Franklin & Osindero",
+    institution: "Google DeepMind",
+    formal: true,
     summary:
       "Runs from a framework for the AI agent economy (Virtual Agent Economies), to cataloguing how that economy's structure can be exploited (AI Agent Traps), to governance mechanisms for delegation and accountability within it (Intelligent AI Delegation, Distributional AGI Safety). The claim-type mix — conceptual framework, risk taxonomy, proposed method — suggests a group moving from framework-building toward operational mechanism design.",
     papers: [
@@ -24,6 +26,8 @@ const CLUSTERS = [
   },
   {
     name: "Bisconti, Galisai, Pierucci, Bracale & Prandi",
+    institution: "DEXAI – Icaro Lab",
+    formal: true,
     summary:
       "Two papers building a single theoretical program in sequence: the first argues safety analysis needs to move from model-level to system-level and proposes the ESRH taxonomy of failure modes; the second goes a level deeper, proposing a formal 'microphysics' of agent-to-agent interaction as the mechanism generating those failures. Both are conceptual-framework papers — a layered apparatus being built out, not yet tested empirically within this pair.",
     papers: [
@@ -39,8 +43,10 @@ const CLUSTERS = [
   },
   {
     name: "Lewis Hammond & Alan Chan",
+    institution: "Cooperative AI Foundation (Hammond) & Centre for the Governance of AI (Chan)",
+    formal: false,
     summary:
-      "Moves from mapping the risk landscape (a foundational multi-institution survey of multi-agent risks) to accountability infrastructure for that landscape (IDs for AI Systems) — survey followed by proposed system, both co-authored by the same pair. A program moving from mapping risk to building the tooling to act on it.",
+      "Moves from mapping the risk landscape (a foundational multi-institution survey of multi-agent risks) to accountability infrastructure for that landscape (IDs for AI Systems) — survey followed by proposed system, both co-authored by the same pair. Unlike the two clusters above, this one crosses an institutional line: Hammond and Chan collaborate from two separate organizations, not one shared lab — an informal cross-institutional partnership rather than a single group's output.",
     papers: [
       {
         title: "Multi-Agent Risks from Advanced AI",
@@ -59,10 +65,10 @@ const BORDERLINE = [
     note: "Hammond alone (not Chan) also co-authors Habermolt: Delegating Deliberation to AI Representatives — a single-author bridge to the cluster above, not a second shared paper with Chan.",
   },
   {
-    note: "Noam Kolt co-authors IDs for AI Systems (with Hammond & Chan, above) and, separately, Regulating AI Agents — but shares only himself, not a second author, across the two.",
+    note: "Noam Kolt (University of Toronto) co-authors IDs for AI Systems (with Hammond & Chan, above) and, separately, Regulating AI Agents — but shares only himself, not a second author, across the two. IDs for AI Systems is itself a broad, ten-author, multi-institution coalition paper (GovAI, Cooperative AI Foundation, Cambridge, Toronto and others) — more a meeting point than a single group's work, which is why it bridges to several otherwise-unconnected authors here.",
   },
   {
-    note: "David Krueger co-authors IDs for AI Systems and, separately, Gradual Disempowerment — same single-author bridge pattern as Kolt, toward a different (x-risk) throughline.",
+    note: "David Krueger (University of Cambridge) co-authors IDs for AI Systems and, separately, Gradual Disempowerment — same single-author bridge pattern as Kolt, toward a different (x-risk) throughline.",
   },
 ];
 
@@ -86,7 +92,10 @@ export function ResearchAgendas() {
           who&apos;s visible in the corpus we&apos;ve indexed so far, not
           who&apos;s active in the field overall — a group with a coherent
           agenda but only one paper currently in the canon won&apos;t appear
-          here.
+          here. Each cluster is also cross-checked against its authors&apos;
+          institutions: two of the three below turn out to be one lab&apos;s
+          output start to finish; the third is an informal partnership that
+          crosses an institutional line.
         </p>
 
         <div className="mt-12 grid gap-px overflow-hidden border border-rule bg-rule md:grid-cols-2">
@@ -102,6 +111,11 @@ export function ResearchAgendas() {
               <h3 className="font-serif text-lg font-semibold">
                 {cluster.name}
               </h3>
+              <p className="mt-2 font-mono text-xs uppercase tracking-widest text-accent">
+                {cluster.institution}
+                {" — "}
+                {cluster.formal ? "single institution" : "cross-institutional"}
+              </p>
               <p className="mt-4 text-sm leading-relaxed text-foreground/70">
                 {cluster.summary}
               </p>
