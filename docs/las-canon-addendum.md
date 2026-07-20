@@ -1,125 +1,156 @@
-# LAS Canon & Site — Addendum Implementation Notes
+# LAS Canon & Site — Implementation Notes
 
-Implementation record for `las-canon-and-open-problems-spec.md`'s addendum
-(Tasks A amendment, C, D, E, F, and the Disciplines caveat correction).
-The base spec itself, and its full Task A/B execution, live outside this
-repo; this file documents what was actually implementable here, against
-the real 45-paper canon (`data/las-canon.csv`), and what remains blocked
-pending further work upstream.
+Implementation record reconciling three spec documents against the real
+45-paper canon (`data/las-canon.csv`, supplied mid-implementation as
+`LAS_sources`):
 
-## Task A amendment: `claim_type`
+- `las-canon-dimension-tagging-spec.md` — the original Task A: five
+  dimension columns (`system_type`, `participant_mix`, `observability`,
+  `focus_area`, `threat_model`), no `claim_type`.
+- `las-canon-and-open-problems-spec.md` — a later revision covering Tasks
+  A-D: Task A already includes a sixth `claim_type` column, plus Tasks B
+  (Open Questions synthesis), C (research-agenda clustering), D (heatmap).
+- The canon addendum (implemented first, before the two files above were
+  available) — adds its own `claim_type` amendment to Task A, plus Tasks
+  C, D, E (Foundational Works), F (Contribute-a-Source), and a Disciplines
+  caveat correction.
 
-Tagged for all 45 corpus entries in `data/las-canon.csv`, using the closed
-set from the addendum (`theoretical/conceptual framework`, `empirical
-study`, `survey/taxonomy`, `proposed method/system`, `position/opinion`,
-`threat model articulation`, `policy/regulatory analysis`,
-`dataset/tool`, `live deployment`). Multi-value entries use the
-semicolon-separated format specified for the other five dimension
-columns. No paper needed a value outside the closed set.
+The addendum names `las-canon-and-open-problems-spec.md` as what it
+supplements, but was evidently written against an earlier state of that
+file (5 dimensions, no Tasks C/D yet) — the two documents disagree on one
+column and on a clustering threshold. Both conflicts are called out below
+along with which definition this repo uses.
 
-The other five Task A dimension columns (`system_type`,
-`participant_mix`, `observability`, `focus_area`, `threat_model`) are not
-tagged in this corpus yet — that tagging is base-spec Task A work with a
-closed-set definition that isn't available in this repo. `data/las-canon.csv`
-and `lib/canon-schema.ts` model them as present-but-currently-empty
-columns rather than inventing value sets for them.
+## Task A: six-dimension tagging
 
-## Task C: Research Agendas / Groups
+All 45 corpus entries are tagged across all six dimension columns plus
+`tag_confidence`, in `data/las-canon.csv`. Tagging was done from the
+`summary` field (title/summary/tags), not by fetching each paper's full
+abstract — so every row is `tag_confidence: summary-only`. `full-text`
+tagging (per the dimension-tagging spec's methodology) is a follow-up
+pass, not done here.
 
-Method: clustered `data/las-canon.csv` by shared authorship
-(`creators`), normalizing name variants (e.g. "P. Bisconti" /
-"Piercosma Bisconti"), keeping author sets with 2+ papers in the corpus.
-Implemented as `app/components/research-agendas.tsx`, wired into the site
-nav and homepage.
+**`claim_type` conflict.** The two base-spec files define this column
+differently:
 
-Five clusters found:
+- Canon addendum (used here): 9-value paper-type taxonomy —
+  `theoretical/conceptual framework`, `empirical study`,
+  `survey/taxonomy`, `proposed method/system`, `position/opinion`,
+  `threat model articulation`, `policy/regulatory analysis`,
+  `dataset/tool`, `live deployment`.
+- `las-canon-and-open-problems-spec.md`: 4-value argument-structure
+  taxonomy — `diagnosis`, `mechanism`, `evidence`, `policy` — explicitly
+  designed so a paper can carry several at once (e.g. diagnose a problem
+  *and* propose a mechanism for it).
 
-1. **Tomašev, Franklin & Osindero** (4 papers) — Virtual Agent Economies,
-   AI Agent Traps, Intelligent AI Delegation, Distributional AGI Safety.
-2. **Bisconti, Galisai, Pierucci, Bracale & Prandi** (2 papers) — Beyond
-   Single-Agent Safety (ESRH), Agentic Microphysics. Bisconti has a third
-   corpus paper (AI Agents Under EU Law) with a different co-author set —
-   noted separately rather than folded into this cluster.
-3. **Lewis Hammond**, with Alan Chan co-authoring 2 of 3 (3 papers) —
-   Multi-Agent Risks from Advanced AI, IDs for AI Systems, Habermolt.
-4. **Noam Kolt** (2 papers) — IDs for AI Systems, Regulating AI Agents.
-   Bridges into Hammond's cluster via the shared IDs paper.
-5. **David Krueger** (2 papers) — IDs for AI Systems, Gradual
-   Disempowerment. Also bridges via the shared IDs paper, toward a
-   different (x-risk) throughline than Kolt's regulatory one.
+Confirmed with the spec owner: the 9-value addendum scheme is
+authoritative. `lib/canon-schema.ts` and `data/las-canon.csv` use it. The
+4-value scheme is not implemented as a separate column.
 
-These are the two clusters named as illustrative examples in the
-addendum (1 and 2), plus three more found by running the method against
-the full corpus rather than stopping at the examples.
+**Flagged rows** (no value in any of the five non-`claim_type`
+dimensions, per both specs' flagging requirement): "Multi-Agent Risks
+from Advanced AI" — a field-level survey/taxonomy paper that doesn't
+describe one system type, one observability regime, or one specific
+named threat from the closed lists; it still has a `claim_type`
+(`survey/taxonomy`).
 
-Caveat (per spec): the section is framed as "groups whose work we've
-indexed," not "the groups working on this" — see the framing copy in the
-component itself.
+**Closed-set gaps:** none encountered — every paper that needed a
+dimension value found one already on a closed list.
+
+## Task B: Cross-Cutting Open Problems Synthesis
+
+Out of scope here — `las-canon-and-open-problems-spec.md` requires a
+hand-picked core-paper list ("researcher already has candidates in
+mind... confirm final list before running") that hasn't been supplied.
+The current `OpenQuestions` component on the site is still placeholder
+copy; this task is unblocked once that list arrives.
+
+## Task C: Research Agendas — threshold correction
+
+`las-canon-and-open-problems-spec.md`'s Task C sets the clustering rule
+as "any set of ≥2 papers in the canon sharing ≥2 authors," and explicitly
+requires reporting rather than silently adjusting the threshold, and
+flagging borderline cases rather than silently including or excluding
+them. The first implementation of `app/components/research-agendas.tsx`
+used a looser rule (any single author appearing on 2+ papers), which
+doesn't match this. Corrected:
+
+**Clusters (≥2 shared authors, ≥2 shared papers):**
+
+1. **Tomašev, Franklin & Osindero** (4 papers, 3 shared authors) — Virtual
+   Agent Economies, AI Agent Traps, Intelligent AI Delegation,
+   Distributional AGI Safety.
+2. **Bisconti, Galisai, Pierucci, Bracale & Prandi** (2 papers, 5 shared
+   authors) — Beyond Single-Agent Safety (ESRH), Agentic Microphysics.
+3. **Lewis Hammond & Alan Chan** (2 papers, 2 shared authors) —
+   Multi-Agent Risks from Advanced AI, IDs for AI Systems.
+
+**Flagged as borderline, not shown as clusters:** Hammond's third paper
+(Habermolt) shares only Hammond, not Chan, with the pair above — one
+shared author, not two. Noam Kolt and David Krueger each co-author IDs
+for AI Systems and one further paper (Regulating AI Agents; Gradual
+Disempowerment, respectively), but share only themselves — not a second
+author — across the pair, so neither qualifies as a 2-shared-author
+cluster on its own. All three are noted in the site component rather than
+either folded into a cluster or dropped silently.
+
+These clusters cover the two named as illustrative examples in the canon
+addendum (1 and 2 above), confirming that the ≥2-shared-authors rule
+still finds them; the difference from the addendum's looser rule only
+shows up in the smaller, single-author bridge cases.
 
 ## Task D: Dimension Heatmap (spec only, not implemented)
 
-Functional requirement, recorded for whoever builds the interface later —
-matches the addendum verbatim:
+Functional requirement, recorded for whoever builds the interface later.
+Reconciles the addendum's version with `las-canon-and-open-problems-spec.md`'s
+Task D, which adds one detail the addendum didn't mention:
 
 - User selects two dimensions from `system_type`, `participant_mix`,
-  `observability`, `focus_area`, `threat_model`, `claim_type`.
+  `observability`, `focus_area`, `threat_model`, `claim_type`, **plus the
+  free-text `tags` column as a seventh option** (more granular than any
+  single closed dimension).
 - Grid: rows = dimension 1 values, columns = dimension 2 values, cell =
   count of papers carrying both values. A paper with multiple values in
   either dimension counts toward every cell its values touch.
-- Cell shading by count, so sparse/empty cells are visually distinct.
+- Cell shading by count, so sparse/empty cells are visually distinct from
+  populated ones or a loading state.
 - Clicking a cell surfaces the matching paper list via the same query
   logic as the Task A filter table — not a second, separately-built
   system.
 - Open: exact page placement, and tech stack (depends on the still-unresolved
-  choice for the rest of the site).
+  choice for the rest of the site), and default dimension pair on load.
 
-## Task E: Foundational Works — blocked on its own gate
+## Task E: Foundational Works — gate checked, still blocked
 
-Not run. The gate requires confirming every major `focus_area`,
-`threat_model`, and `system_type` value has 2-3+ papers in the corpus,
-using the Task D coverage matrix or an equivalent per-value check. None
-of those three dimensions are tagged in this corpus yet (see the Task A
-amendment note above), so the gate can't be evaluated, let alone passed.
-This blocks both the targeted-expansion step and the citation-ranking
-step. Revisit once base-spec Task A's tagging for those three dimensions
-exists.
+Now that all five base dimensions are tagged, the gate is actually
+checkable (previously it wasn't, because none of the three dimensions
+existed). Per-value counts across the 45-paper corpus:
+
+- **`focus_area` — passes.** Monitoring 6, Steering 5, Simulation 11,
+  Redesign 3. Every value clears the 2-3 paper minimum.
+- **`system_type` — passes.** Production economy 3, social network 11,
+  labour market 3, financial system 3. Every value clears the minimum.
+- **`threat_model` — fails.** Systemic Instability 4, Collective
+  Superintelligence 3, Inequality 2, but **Gradual Disempowerment 1**,
+  **Power Concentration 1**, and **Partially Observable Systems 0** /
+  **Outdated Models 0** — four of seven values are under-represented.
+
+Per the addendum's gate rule, any under-represented value blocks
+proceeding to citation ranking. `threat_model` fails, so Task E stays
+blocked overall — but the failure is now specific rather than a blanket
+"no data yet": the targeted-expansion step (search for known/likely
+foundational papers specifically in Partially Observable Systems,
+Outdated Models, Gradual Disempowerment, and Power Concentration) is the
+concrete next step, not run as part of this change since it means adding
+new papers to the canon — a curation decision worth its own pass rather
+than folding into a schema-reconciliation change.
 
 ## Task F: Contribute-a-Source Intake (backend design)
 
-`lib/canon-schema.ts` adds `PendingSubmission`, extending the canon entry
-shape with `submitted_by` and `status` (`pending` / `approved` /
-`rejected`), plus `rejection_reason` for rejected entries so a bad
-submission isn't reconsidered from scratch — matching the addendum's
-schema requirement.
-
-Flow (backend logic only, no submission UI, no auto-approval, per the
-addendum's explicit scope limits):
-
-1. Intake: a URL (+ optional submitter note) enters a pending queue,
-   never written directly to canon.
-2. Fetch title/authors/date/abstract from the URL.
-3. Tag all six dimension columns using the same don't-force-fit logic as
-   Task A, plus the free-text `tags` field.
-4. Entry sits in the pending queue with auto-generated tags until human
-   review.
-5. On approval, the entry (with any human corrections) is appended to
-   `data/las-canon.csv` in the same schema as existing rows.
-
-Steps 2-3 (URL metadata fetch, automatic tagging) need an actual
-fetch/LLM-tagging service wired into the site's backend — a real
-infrastructure decision (hosting, queue storage, API keys) that isn't
-specified elsewhere in this repo. This doc and the schema in
-`lib/canon-schema.ts` are the design; wiring the live pipeline is
-follow-up work.
+Unchanged by this reconciliation. `lib/canon-schema.ts`'s
+`PendingSubmission` type now also carries `tag_confidence`, inherited
+from the corrected `CanonEntry` shape.
 
 ## Disciplines caveat correction
 
-The "Large agent problems are highly cross-disciplinary" list in
-`app/components/disciplines.tsx` (network science, social network
-analysis, macroprudential regulation, market microstructure, multi-agent
-evaluations, behavioural evaluations, population modelling) is
-illustrative/inspirational framing text, not a rigorously scoped
-taxonomy. Flagged with a code comment in that file: don't use it as a
-checklist to audit the corpus or its tagging, and don't treat it as a
-formal dimension system for filtering or the heatmap. It can stay as
-motivating copy on the site.
+Unchanged — see the code comment in `app/components/disciplines.tsx`.
