@@ -1,3 +1,6 @@
+// Illustrative/inspirational framing text, not a rigorously scoped
+// taxonomy — don't treat this list as ground truth to audit the corpus
+// or its tagging against (see docs/las-canon-addendum.md).
 const TAGS = [
   "Network science",
   "Social network analysis",
