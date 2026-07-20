@@ -38,45 +38,31 @@ const CLUSTERS = [
     ],
   },
   {
-    name: "Lewis Hammond (with Alan Chan)",
+    name: "Lewis Hammond & Alan Chan",
     summary:
-      "Moves from mapping the risk landscape (a foundational multi-institution survey of multi-agent risks, with Chan) to accountability infrastructure for that landscape (IDs for AI Systems, again with Chan) to a specific applied delegation mechanism (Habermolt). Survey, proposed system, and applied deployment in sequence — a program moving from mapping risk to building tooling to testing delegation in practice.",
+      "Moves from mapping the risk landscape (a foundational multi-institution survey of multi-agent risks) to accountability infrastructure for that landscape (IDs for AI Systems) — survey followed by proposed system, both co-authored by the same pair. A program moving from mapping risk to building the tooling to act on it.",
     papers: [
       {
         title: "Multi-Agent Risks from Advanced AI",
         url: "https://arxiv.org/abs/2502.14143",
       },
       { title: "IDs for AI Systems", url: "https://arxiv.org/abs/2406.12137" },
-      {
-        title: "Habermolt: Delegating Deliberation to AI Representatives",
-        url: "https://arxiv.org/abs/2605.24413",
-      },
     ],
   },
+];
+
+// Author sets sharing exactly one paper with a cluster above, and only
+// one author with it — under our >=2-shared-author threshold for a
+// cluster, so flagged here rather than silently folded in or dropped.
+const BORDERLINE = [
   {
-    name: "Noam Kolt",
-    summary:
-      "Runs from technical accountability infrastructure (a co-author on IDs for AI Systems) to legal analysis of how existing regulation fails to address agentic AI specifically — a technical-to-legal governance throughline. Bridges into the Hammond cluster above via the shared IDs paper.",
-    papers: [
-      { title: "IDs for AI Systems", url: "https://arxiv.org/abs/2406.12137" },
-      {
-        title: "Regulating AI Agents",
-        url: "https://arxiv.org/abs/2603.23471",
-      },
-    ],
+    note: "Hammond alone (not Chan) also co-authors Habermolt: Delegating Deliberation to AI Representatives — a single-author bridge to the cluster above, not a second shared paper with Chan.",
   },
   {
-    name: "David Krueger",
-    summary:
-      "Also bridges into the Hammond cluster via IDs for AI Systems, but points toward a different throughline — from accountability infrastructure to a specific long-horizon catastrophic threat model: the gradual, incremental loss of human influence without any single triggering event.",
-    papers: [
-      { title: "IDs for AI Systems", url: "https://arxiv.org/abs/2406.12137" },
-      {
-        title:
-          "Gradual Disempowerment: Systemic Existential Risks from Incremental AI Development",
-        url: "https://arxiv.org/abs/2501.16946",
-      },
-    ],
+    note: "Noam Kolt co-authors IDs for AI Systems (with Hammond & Chan, above) and, separately, Regulating AI Agents — but shares only himself, not a second author, across the two.",
+  },
+  {
+    note: "David Krueger co-authors IDs for AI Systems and, separately, Gradual Disempowerment — same single-author bridge pattern as Kolt, toward a different (x-risk) throughline.",
   },
 ];
 
@@ -94,17 +80,25 @@ export function ResearchAgendas() {
           Groups whose work we&apos;ve indexed.
         </h2>
         <p className="mt-5 max-w-2xl text-base leading-relaxed text-foreground/70">
-          Clusters below share authorship across two or more papers in our
-          corpus — a &ldquo;who&rsquo;s doing what&rdquo; map, not a claim
-          about a unifying theory of the field. This reflects who&apos;s
-          visible in the corpus we&apos;ve indexed so far, not who&apos;s
-          active in the field overall — a group with a coherent agenda but
-          only one paper currently in the canon won&apos;t appear here.
+          Clusters below share at least two authors across at least two
+          papers in our corpus — a &ldquo;who&rsquo;s doing what&rdquo; map,
+          not a claim about a unifying theory of the field. This reflects
+          who&apos;s visible in the corpus we&apos;ve indexed so far, not
+          who&apos;s active in the field overall — a group with a coherent
+          agenda but only one paper currently in the canon won&apos;t appear
+          here.
         </p>
 
         <div className="mt-12 grid gap-px overflow-hidden border border-rule bg-rule md:grid-cols-2">
-          {CLUSTERS.map((cluster) => (
-            <div key={cluster.name} className="bg-background p-8">
+          {CLUSTERS.map((cluster, i) => (
+            <div
+              key={cluster.name}
+              className={`bg-background p-8${
+                i === CLUSTERS.length - 1 && CLUSTERS.length % 2 === 1
+                  ? " md:col-span-2"
+                  : ""
+              }`}
+            >
               <h3 className="font-serif text-lg font-semibold">
                 {cluster.name}
               </h3>
@@ -127,6 +121,17 @@ export function ResearchAgendas() {
               </ul>
             </div>
           ))}
+        </div>
+
+        <div className="mt-10 max-w-3xl">
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">
+            Borderline — not shown as clusters above
+          </p>
+          <ul className="mt-4 space-y-3 text-sm leading-relaxed text-foreground/60">
+            {BORDERLINE.map((item) => (
+              <li key={item.note}>{item.note}</li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>
