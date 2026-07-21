@@ -28,12 +28,6 @@ export function Nav() {
             Sources
           </Link>
           <Link
-            href="/contribute"
-            className="shrink-0 transition-colors hover:text-foreground"
-          >
-            Contribute
-          </Link>
-          <Link
             href="/#join"
             className="shrink-0 border border-foreground px-3 py-1.5 text-foreground transition-colors hover:border-accent hover:text-accent"
           >

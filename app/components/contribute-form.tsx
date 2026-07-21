@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { submitSource, type ContributeState } from "@/app/contribute/actions";
+import { submitSource, type ContributeState } from "@/app/sources/actions";
 
 const initialContributeState: ContributeState = { status: "idle", message: "" };
 

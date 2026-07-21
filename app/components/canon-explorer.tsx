@@ -221,23 +221,41 @@ export function CanonExplorer({ entries }: { entries: CanonEntry[] }) {
             ? `${filtered.length} paper${filtered.length === 1 ? "" : "s"} — ${activeCell.row} × ${activeCell.col}`
             : `All ${filtered.length} papers`}
         </p>
-        <ul className="mt-4 divide-y divide-rule border-y border-rule">
-          {filtered.map((entry) => (
-            <li key={entry.url} className="py-4">
-              <a
-                href={entry.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-serif text-base font-semibold transition-colors hover:text-accent"
-              >
-                {entry.title}
-              </a>
-              <p className="mt-1 text-sm text-foreground/70">
-                {entry.creators} — {entry.date}
-              </p>
-            </li>
-          ))}
-        </ul>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full min-w-[40rem] border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-rule text-left font-mono text-[10px] font-normal uppercase tracking-widest text-muted">
+                <th className="py-2 pr-4 font-normal">Title</th>
+                <th className="py-2 pr-4 font-normal">Creators</th>
+                <th className="py-2 pr-4 font-normal">Date</th>
+                <th className="py-2 font-normal">Tags</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((entry) => (
+                <tr key={entry.url} className="border-b border-rule align-top">
+                  <td className="py-3 pr-4">
+                    <a
+                      href={entry.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-serif text-base font-semibold transition-colors hover:text-accent"
+                    >
+                      {entry.title}
+                    </a>
+                  </td>
+                  <td className="py-3 pr-4 text-foreground/70">
+                    {entry.creators}
+                  </td>
+                  <td className="py-3 pr-4 whitespace-nowrap text-foreground/70">
+                    {entry.date}
+                  </td>
+                  <td className="py-3 text-foreground/70">{entry.tags}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
