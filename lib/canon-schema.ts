@@ -111,6 +111,10 @@ export type SubmissionStatus = "pending" | "approved" | "rejected";
 export interface PendingSubmission extends CanonEntry {
   submitted_by: string;
   status: SubmissionStatus;
+  /** Optional free-text context from whoever submitted the URL — not part
+   * of the canon schema proper, dropped (or folded into `summary` by a
+   * reviewer) if the submission is approved. */
+  submitter_note?: string;
   /** Required when status is "rejected", so the same bad submission
    * isn't reconsidered from scratch. */
   rejection_reason?: string;
