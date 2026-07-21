@@ -2,8 +2,7 @@ const CLUSTERS = [
   {
     name: "Tomašev, Franklin & Osindero",
     institution: "Google DeepMind",
-    summary:
-      "DeepMind's running thread on the AI agent economy. They set up the framework first, then showed how it gets exploited, and are now working out how to govern delegation and accountability inside it.",
+    summary: "DeepMind's running thread on the AI agent economy.",
     papers: [
       {
         title: "Virtual Agent Economies",
@@ -26,8 +25,7 @@ const CLUSTERS = [
   {
     name: "Bisconti, Pierucci & Galisai",
     institution: "DEXAI – Icaro Lab",
-    summary:
-      "Two papers, one argument. The first pushes safety analysis up from single models to whole systems, with the ESRH taxonomy of failure modes; the second goes underneath it, to the local agent interactions those failures grow out of.",
+    summary: "Microfoundations of macro safety.",
     papers: [
       {
         title: "Beyond Single-Agent Safety",
@@ -42,8 +40,7 @@ const CLUSTERS = [
   {
     name: "Hammond & Chan",
     institution: "Cooperative AI Foundation × GovAI",
-    summary:
-      "Two researchers at different labs who keep writing together. They began by mapping where multi-agent risk comes from, then moved to the infrastructure you'd need to hold those systems accountable.",
+    summary: "Multi-agent risk and coordination infrastructure.",
     papers: [
       {
         title: "Multi-Agent Risks from Advanced AI",
@@ -65,12 +62,8 @@ export function ResearchAgendas() {
           Research Agendas
         </p>
         <h2 className="mt-4 max-w-2xl font-serif text-3xl font-semibold leading-tight md:text-4xl">
-          Groups whose work we&apos;ve indexed.
+          Groups in the area.
         </h2>
-        <p className="mt-5 max-w-2xl text-base leading-relaxed text-foreground/70">
-          A handful of author teams show up again and again. Here&apos;s what
-          each is working on, and where they work.
-        </p>
 
         <div className="mt-12 grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
           {CLUSTERS.map((cluster) => (
@@ -101,13 +94,6 @@ export function ResearchAgendas() {
             </div>
           ))}
         </div>
-
-        <p className="mt-12 max-w-2xl text-sm leading-relaxed text-muted">
-          Three more papers hang off these groups by a single shared author,
-          not enough to be teams in their own right — Habermolt (Hammond),
-          Regulating AI Agents (Kolt), Gradual Disempowerment (Krueger). Each
-          links in through the ten-author IDs for AI Systems.
-        </p>
       </div>
     </section>
   );
