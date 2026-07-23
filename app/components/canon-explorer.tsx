@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   CLAIM_TYPES,
   FOCUS_AREAS,
@@ -17,8 +17,7 @@ type DimensionKey =
   | "observability"
   | "focus_area"
   | "threat_model"
-  | "claim_type"
-  | "tags";
+  | "claim_type";
 
 const DIMENSION_LABELS: Record<DimensionKey, string> = {
   system_type: "System Type",
@@ -27,7 +26,6 @@ const DIMENSION_LABELS: Record<DimensionKey, string> = {
   focus_area: "Focus Area",
   threat_model: "Threat Model",
   claim_type: "Claim Type",
-  tags: "Tags",
 };
 
 const DIMENSION_KEYS = Object.keys(DIMENSION_LABELS) as DimensionKey[];
@@ -44,14 +42,6 @@ const CLOSED_SET_VALUES: Partial<Record<DimensionKey, readonly string[]>> = {
 };
 
 function valuesFor(entry: CanonEntry, key: DimensionKey): string[] {
-  if (key === "tags") {
-    return entry.tags
-      ? entry.tags
-          .split(";")
-          .map((v) => v.trim())
-          .filter(Boolean)
-      : [];
-  }
   return entry[key] ?? [];
 }
 
@@ -71,18 +61,10 @@ export function CanonExplorer({ entries }: { entries: CanonEntry[] }) {
   } | null>(null);
   const [page, setPage] = useState(1);
 
-  const tagValues = useMemo(() => {
-    const set = new Set<string>();
-    entries.forEach((entry) =>
-      valuesFor(entry, "tags").forEach((tag) => set.add(tag)),
-    );
-    return [...set].sort();
-  }, [entries]);
-
-  const valueUniverse = {
-    ...CLOSED_SET_VALUES,
-    tags: tagValues,
-  } as Record<DimensionKey, readonly string[]>;
+  const valueUniverse = CLOSED_SET_VALUES as Record<
+    DimensionKey,
+    readonly string[]
+  >;
 
   const rowValues = valueUniverse[dimA];
   const colValues = valueUniverse[dimB];
