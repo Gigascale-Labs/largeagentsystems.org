@@ -56,6 +56,13 @@ async function fetchAllRecords(tableId) {
   return records;
 }
 
+function splitMultiValue(value) {
+  return value
+    .split(";")
+    .map((v) => v.trim())
+    .filter(Boolean);
+}
+
 function toCanonEntry(record) {
   const f = record.fields;
   return {
@@ -73,6 +80,7 @@ function toCanonEntry(record) {
     threat_model: f.threat_model ?? [],
     claim_type: f.claim_type ?? [],
     tag_confidence: f.tag_confidence ?? "summary-only",
+    institutions: f.institutions ? splitMultiValue(f.institutions) : [],
   };
 }
 
