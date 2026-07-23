@@ -45,10 +45,6 @@ jobs:
           git config user.name "airtable-sync[bot]"
           git config user.email "bot@largeagentsystems.org"
           git add data/las-canon.airtable.json
-          git commit -m "chore: sync Canon table from Airtable
-
-Updated at $(date -u +'%Y-%m-%dT%H:%M:%SZ')
-Synced rows: $(jq 'length' data/las-canon.airtable.json)
-
-[skip ci]"
+          ROWS=$(jq 'length' data/las-canon.airtable.json)
+          git commit -m "chore: sync Canon table from Airtable ($ROWS rows) [skip ci]"
           git push
