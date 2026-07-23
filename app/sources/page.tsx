@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Nav } from "../components/nav";
 import { Footer } from "../components/footer";
 import { CanonExplorer } from "../components/canon-explorer";
@@ -29,7 +30,14 @@ export default function SourcesPage() {
             We have catalogued a variety of papers on LAS through community
             contributions and our work at Gigascale. We present them here as
             an early attempt at a survey. Please submit sources you&apos;ve
-            find relevant at the bottom of the page!
+            find relevant at the bottom of the page.
+          </p>
+          <p className="mt-5 max-w-2xl text-base leading-relaxed text-foreground/70">
+            We exclude live deployments, which are listed in the{" "}
+            <Link href="/#map" className="text-accent hover:underline">
+              Org Map
+            </Link>
+            .
           </p>
 
           <div className="mt-12">
