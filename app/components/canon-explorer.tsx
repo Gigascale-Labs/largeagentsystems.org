@@ -32,6 +32,8 @@ const DIMENSION_LABELS: Record<DimensionKey, string> = {
 
 const DIMENSION_KEYS = Object.keys(DIMENSION_LABELS) as DimensionKey[];
 
+const PAGE_SIZE = 10;
+
 const CLOSED_SET_VALUES: Partial<Record<DimensionKey, readonly string[]>> = {
   system_type: SYSTEM_TYPES,
   participant_mix: PARTICIPANT_MIXES,
@@ -67,6 +69,7 @@ export function CanonExplorer({ entries }: { entries: CanonEntry[] }) {
     row: string;
     col: string;
   } | null>(null);
+  const [page, setPage] = useState(1);
 
   const tagValues = useMemo(() => {
     const set = new Set<string>();
@@ -94,14 +97,22 @@ export function CanonExplorer({ entries }: { entries: CanonEntry[] }) {
 
   function selectDimA(next: DimensionKey) {
     setActiveCell(null);
+    setPage(1);
     if (next === dimB) setDimB(dimA);
     setDimA(next);
   }
 
   function selectDimB(next: DimensionKey) {
     setActiveCell(null);
+    setPage(1);
     if (next === dimA) setDimA(dimB);
     setDimB(next);
+  }
+
+  function toggleCell(row: string, col: string) {
+    const isActive = activeCell?.row === row && activeCell?.col === col;
+    setActiveCell(isActive ? null : { row, col });
+    setPage(1);
   }
 
   const filtered = activeCell
@@ -111,6 +122,13 @@ export function CanonExplorer({ entries }: { entries: CanonEntry[] }) {
           valuesFor(entry, dimB).includes(activeCell.col),
       )
     : entries;
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filtered.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
 
   return (
     <div>
@@ -145,7 +163,10 @@ export function CanonExplorer({ entries }: { entries: CanonEntry[] }) {
         </label>
         {activeCell && (
           <button
-            onClick={() => setActiveCell(null)}
+            onClick={() => {
+              setActiveCell(null);
+              setPage(1);
+            }}
             className="normal-case tracking-normal text-accent hover:underline"
           >
             Clear selection ×
@@ -190,9 +211,7 @@ export function CanonExplorer({ entries }: { entries: CanonEntry[] }) {
                       className={`border border-rule p-0 text-center ${shade(n)}`}
                     >
                       <button
-                        onClick={() =>
-                          setActiveCell(isActive ? null : { row, col })
-                        }
+                        onClick={() => toggleCell(row, col)}
                         disabled={n === 0}
                         className={`h-10 w-10 text-sm transition-colors ${
                           isActive
@@ -232,7 +251,7 @@ export function CanonExplorer({ entries }: { entries: CanonEntry[] }) {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((entry) => (
+              {paginated.map((entry) => (
                 <tr key={entry.url} className="border-b border-rule align-top">
                   <td className="py-3 pr-4">
                     <a
@@ -256,6 +275,27 @@ export function CanonExplorer({ entries }: { entries: CanonEntry[] }) {
             </tbody>
           </table>
         </div>
+        {totalPages > 1 && (
+          <div className="mt-4 flex items-center gap-4 font-mono text-xs uppercase tracking-[0.2em] text-muted">
+            <button
+              onClick={() => setPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="text-accent hover:underline disabled:cursor-default disabled:text-muted/40 disabled:no-underline"
+            >
+              ← Prev
+            </button>
+            <span>
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="text-accent hover:underline disabled:cursor-default disabled:text-muted/40 disabled:no-underline"
+            >
+              Next →
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
