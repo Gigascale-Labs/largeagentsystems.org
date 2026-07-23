@@ -10,7 +10,7 @@ import { FocusAreas } from "./components/focus-areas";
 import { OpenQuestions } from "./components/open-questions";
 import { Barriers } from "./components/barriers";
 import { ResearchAgendas } from "./components/research-agendas";
-import { FieldMap } from "./components/field-map";
+import { OrgsMap } from "./components/orgs-map";
 import { Join } from "./components/join";
 import { Footer } from "./components/footer";
 
@@ -35,6 +35,8 @@ export default function Home() {
         />
         <Disciplines />
         <FocusAreas />
+        <ResearchAgendas />
+        <OrgsMap />
 
         <PartHeader
           id="start"
@@ -44,8 +46,6 @@ export default function Home() {
         />
         <OpenQuestions />
         <Barriers />
-        <ResearchAgendas />
-        <FieldMap />
 
         <Join />
       </main>

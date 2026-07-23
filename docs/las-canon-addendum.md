@@ -99,6 +99,40 @@ addendum (1 and 2 above), confirming that the ≥2-shared-authors rule
 still finds them; the difference from the addendum's looser rule only
 shows up in the smaller, single-author bridge cases.
 
+### Institutional cross-correlation (not in any of the three specs)
+
+Added on request: each cluster's authors were cross-checked against their
+institutional affiliations (researched per paper via web search, since
+none of the three specs track this — it's a new `institutions` column on
+`CanonEntry`, paper-level and open-ended rather than a closed taxonomy).
+The result distinguishes two different kinds of "cluster":
+
+- **Tomašev, Franklin & Osindero** and **Bisconti, Galisai, Pierucci,
+  Bracale & Prandi** are each **single-institution** clusters — Google
+  DeepMind and DEXAI – Icaro Lab respectively. The informal
+  (co-authorship) and formal (institutional) groupings are identical here:
+  one lab's output, in sequence.
+- **Lewis Hammond & Alan Chan** is **cross-institutional** — Hammond
+  (Cooperative AI Foundation) and Chan (Centre for the Governance of AI)
+  collaborate across two separate organizations. The informal
+  collaboration graph catches something the institutional view alone
+  would miss: two different labs choosing to co-publish, not one lab's
+  internal output.
+- The borderline bridges (Kolt, Krueger) both run through **IDs for AI
+  Systems**, which is itself a ten-author, multi-institution coalition
+  paper (GovAI, Cooperative AI Foundation, Cambridge, Toronto, and
+  others) — explaining why it bridges to otherwise-unconnected authors
+  rather than anchoring a tight single-lab cluster the way the two clean
+  clusters above do.
+
+Institution data is web-search-sourced per paper, not from a structured
+API (OpenAlex and Semantic Scholar's APIs weren't reachable from this
+environment), and is left blank for 4 papers where no confident
+affiliation was found (an MDPI paper with no stated affiliation, and the
+three no-creator live-system/homepage entries). Not exhaustive across all
+45 papers' full author lists — verified at the level needed to place each
+paper's primary institution(s), not every co-author's.
+
 ## Task D: Dimension Heatmap (spec only, not implemented)
 
 Functional requirement, recorded for whoever builds the interface later.

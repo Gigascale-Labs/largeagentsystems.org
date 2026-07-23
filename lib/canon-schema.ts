@@ -31,6 +31,7 @@ export const FOCUS_AREAS = [
   "Steering",
   "Simulation",
   "Redesign",
+  "Design",
 ] as const;
 
 export const THREAT_MODELS = [
@@ -52,7 +53,6 @@ export const CLAIM_TYPES = [
   "threat model articulation",
   "policy/regulatory analysis",
   "dataset/tool",
-  "live deployment",
 ] as const;
 
 export type SystemType = (typeof SYSTEM_TYPES)[number];
@@ -88,6 +88,17 @@ export interface CanonEntry extends CanonDimensions {
    * the corpus's existing `summary` field alone (`summary-only`). All 45
    * corpus entries are currently `summary-only`. */
   tag_confidence: TagConfidence;
+  /**
+   * Institutions represented among the paper's authors, semicolon-separated,
+   * open-ended (not a closed set like the six dimensions above). Not part
+   * of any of the three spec files — added to let the Research Agendas
+   * section (Task C) cross-correlate informal author-collaboration
+   * clusters against formal institutional affiliation. Researched via web
+   * search per paper, not fetched from a structured API; blank where no
+   * confident affiliation was found (e.g. no stated affiliation, or an
+   * institutional creator with no named authors).
+   */
+  institutions?: string[];
 }
 
 export type SubmissionStatus = "pending" | "approved" | "rejected";
@@ -100,6 +111,10 @@ export type SubmissionStatus = "pending" | "approved" | "rejected";
 export interface PendingSubmission extends CanonEntry {
   submitted_by: string;
   status: SubmissionStatus;
+  /** Optional free-text context from whoever submitted the URL — not part
+   * of the canon schema proper, dropped (or folded into `summary` by a
+   * reviewer) if the submission is approved. */
+  submitter_note?: string;
   /** Required when status is "rejected", so the same bad submission
    * isn't reconsidered from scratch. */
   rejection_reason?: string;
