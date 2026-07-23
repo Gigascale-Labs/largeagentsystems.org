@@ -1,4 +1,4 @@
-export function FieldMap() {
+export function OrgsMap() {
   return (
     <section
       id="map"
@@ -9,7 +9,7 @@ export function FieldMap() {
           Resource
         </p>
         <h2 className="mt-4 font-serif text-3xl font-semibold leading-tight md:text-4xl">
-          Explore the field map.
+          Explore the orgs map.
         </h2>
         <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-foreground/70">
           A map of the people, organizations, and research directions working
