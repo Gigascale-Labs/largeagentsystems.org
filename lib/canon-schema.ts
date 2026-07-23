@@ -53,6 +53,7 @@ export const CLAIM_TYPES = [
   "threat model articulation",
   "policy/regulatory analysis",
   "dataset/tool",
+  "live deployment",
 ] as const;
 
 export type SystemType = (typeof SYSTEM_TYPES)[number];

@@ -47,7 +47,15 @@ export async function submitSource(
     status: "pending",
   };
 
-  addPendingSubmission(submission);
+  try {
+    await addPendingSubmission(submission);
+  } catch (err) {
+    console.error("Failed to submit to Airtable Pending Queue:", err);
+    return {
+      status: "error",
+      message: "Something went wrong submitting this — please try again.",
+    };
+  }
 
   return {
     status: "success",
