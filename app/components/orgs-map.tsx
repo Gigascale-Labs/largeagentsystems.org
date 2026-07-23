@@ -9,10 +9,10 @@ export function OrgsMap() {
           Org Map
         </p>
         <h2 className="mt-4 max-w-2xl font-serif text-3xl font-semibold leading-tight md:text-4xl">
-          Explore the org map.
+          Org map.
         </h2>
         <p className="mt-5 max-w-xl text-base leading-relaxed text-foreground/70">
-          A map of the people, organizations, and research directions working
+          A map of the people, organizations, and companies working
           on large agent systems.
         </p>
         <a
