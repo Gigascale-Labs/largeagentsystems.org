@@ -33,10 +33,10 @@ jobs:
       - name: Check for changes
         id: check
         run: |
-          if git diff --quiet data/las-canon.airtable.json; then
-            echo "changed=false" >> $GITHUB_OUTPUT
-          else
+          if [ -n "$(git status --porcelain data/las-canon.airtable.json)" ]; then
             echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Commit and push if changed

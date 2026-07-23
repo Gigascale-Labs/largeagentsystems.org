@@ -66,21 +66,31 @@ that's a canon data-quality fix, not an Airtable-migration concern.
 ## The sync mechanism
 
 `scripts/sync-airtable.mjs` — pulls the `Canon` table down to
-`data/las-canon.airtable.json` (gitignored; regenerate, don't commit).
-Plain Node (`fetch` + `fs`), no new dependency. This exists so the **site
-never calls the Airtable API on a page load** — the free plan's 1,000
-calls/month is sized for occasional syncs, not visitor traffic. One
-sync run = one API call, regardless of site traffic.
+`data/las-canon.airtable.json`. Plain Node (`fetch` + `fs`), no new
+dependency. This exists so the **site never calls the Airtable API on a
+page load** — the free plan's 1,000 calls/month is sized for occasional
+syncs, not visitor traffic. One sync run = one API call, regardless of
+site traffic.
 
 ```bash
 cp .env.example .env.local   # fill in AIRTABLE_API_KEY
 npm run sync:airtable
 ```
 
-Not scheduled or webhook-triggered yet, and not read by any site code —
-that's the "site-side consumption" half the original note flagged as
-needing coordination with whatever ends up building the site's actual
-data layer. Run it manually until that's decided.
+**Scheduled:** `.github/workflows/sync-airtable-daily.yml` runs this
+once a day (06:00 UTC) via GitHub Actions and commits
+`data/las-canon.airtable.json` back to the repo if the sync produced a
+diff — tracked in git (not gitignored) so the commit history doubles as
+a change log. Requires an `AIRTABLE_API_KEY` repo secret (Settings →
+Secrets and variables → Actions), scoped with `data.records:read` and
+granted access to the LAS Canon base specifically (a PAT's "Access"
+list doesn't auto-include bases created in a different Airtable
+account/session — this bit us once already). Can also be triggered
+manually via `gh workflow run "Daily Airtable Sync"` or the Actions tab.
+
+Not read by any site code yet — that's the "site-side consumption" half
+of the original note, still needing coordination with whatever ends up
+building the site's actual data layer.
 
 ## Next steps, in order
 
@@ -89,8 +99,6 @@ data layer. Run it manually until that's decided.
    plugs in.
 2. Build the intake form + auto-tagging Automation (manual Airtable-UI
    steps above).
-3. Wire `sync:airtable` into a schedule or webhook once Pending Queue
-   submissions are actually coming in.
-4. Once the spec branch stabilizes and this pipeline is handling real
+3. Once the spec branch stabilizes and this pipeline is handling real
    submissions, retire `data/las-canon.csv` in favor of Airtable as the
    source of truth.
