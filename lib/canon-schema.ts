@@ -31,6 +31,7 @@ export const FOCUS_AREAS = [
   "Steering",
   "Simulation",
   "Redesign",
+  "Design",
 ] as const;
 
 export const THREAT_MODELS = [
@@ -52,7 +53,6 @@ export const CLAIM_TYPES = [
   "threat model articulation",
   "policy/regulatory analysis",
   "dataset/tool",
-  "live deployment",
 ] as const;
 
 export type SystemType = (typeof SYSTEM_TYPES)[number];
