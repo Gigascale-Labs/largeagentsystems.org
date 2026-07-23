@@ -35,7 +35,7 @@ export default function SourcesPage() {
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-foreground/70">
             We exclude live deployments, which are listed in the{" "}
             <Link href="/#map" className="text-accent hover:underline">
-              Org Map
+              org map
             </Link>
             .
           </p>
