@@ -1,8 +1,8 @@
 # Airtable Intake Pipeline — Specification for AI Implementation
 
-**Status:** Infrastructure staged, awaiting intake form, automation, and site-side integration.
+**Status:** Intake form live, tagging pivoted to manual (Airtable can't make outbound webhook calls — see Part 3), promotion automation built. Remaining: repurpose the record-creation automation to stamp `status = "pending"` (Part 3a), and site-side integration (Part 5).
 
-This document specifies the remaining work to complete the Airtable-backed Contribute-a-Source intake pipeline (Task F). The table-side infrastructure (base, tables, canonical data sync) is already built; this spec covers the three major manual steps and site integration.
+This document specifies the remaining work to complete the Airtable-backed Contribute-a-Source intake pipeline (Task F). The table-side infrastructure (base, tables, canonical data sync, intake form, promotion automation) is already built; this spec covers what's left.
 
 **Audience:** Airtable-focused AI implementing the remaining work.
 
@@ -18,7 +18,12 @@ This document specifies the remaining work to complete the Airtable-backed Contr
 |------|-----|-----|--------|
 | **Base:** LAS Canon | `apps8rBIORsmE7ij8` | — | ✓ Created |
 | **Table:** Canon | `tbl2XEeh8Rlnrlw0j` | 15 | ✓ Seeded with 45 rows |
-| **Table:** Pending Queue | `tblhFC8znRYLb80wG` | 16 | ✓ Created, empty |
+| **Table:** Pending Queue | `tblhFC8znRYLb80wG` | 16 | ✓ Created; 1 test row as of 2026-07-23 |
+| **Form:** Contribute a Source | `pagBBh0fev2iJbqNR` | — | ✓ Live: https://airtable.com/apps8rBIORsmE7ij8/pagBBh0fev2iJbqNR/form |
+| **Automation:** Auto-Tagging on Record Creation | — | — | ⚠ Built but non-functional (webhook can't fire); needs repurposing per Part 3a |
+| **Automation:** Approved → Canon promotion | — | — | ✓ Built; not yet tested end-to-end (no row has reached `approved` status yet) |
+
+**Known data-quality note:** the one test row in Pending Queue has `url: "test"` — the form's `url` field type didn't reject a non-URL string. Not a blocker, just confirms the form doesn't validate URL format.
 
 ### Canon Table Fields
 
@@ -96,93 +101,72 @@ Create a public or authenticated form on the Pending Queue table that:
 
 ---
 
-## Part 3: Auto-Tagging Automation (Manual Airtable UI Setup)
+## Part 3: Tagging — Manual, Not Automated (Revised 2026-07-23)
 
-### Goal
-Trigger an Automation when a new row is created in Pending Queue, call an external tagging service to fill in the six dimension fields, then update the record.
+### Why this changed
+The original plan called for an Automation that POSTs each new submission to an
+external tagging service and writes the six dimension fields back from the
+response. The Airtable environment executing these Automations **cannot make
+outbound webhook/POST requests**, so that design is not buildable as specified.
+Tagging is manual until that constraint changes or a different integration
+path is found (e.g., a Zapier/Make bridge, or the tagging service polling
+Airtable's API instead of Airtable calling out to it).
 
-### Prerequisites
-- **External tagging endpoint:** Determine the URL and request/response format for the tagging service (likely built as part of site-side Task F work). For now, this spec assumes:
-  - **Endpoint:** `https://[TBD]/api/tag` (coordinate with Task F implementation)
-  - **Request body:**
-    ```json
-    {
-      "url": "https://example.com/paper.pdf",
-      "title": "Paper Title",
-      "summary": "Paper summary..."
-    }
-    ```
-  - **Response body:**
-    ```json
-    {
-      "system_type": ["production economy"],
-      "participant_mix": ["mixed human+AI"],
-      "observability": ["agents observable"],
-      "focus_area": ["Steering"],
-      "threat_model": ["Power Concentration"],
-      "claim_type": ["empirical study"],
-      "tag_confidence": "summary-only"
-    }
-    ```
-  - If the endpoint is not yet ready, create a placeholder Automation with a webhook that logs the request, then update it once the service is live.
+### Current pipeline (manual tagging)
 
-### Steps
+1. User submits via the intake form → new row in Pending Queue with `url` +
+   `submitted_by` only.
+2. **"Auto-Tagging on Record Creation" automation** fires on every new row.
+   Repurposed (per Part 3a below) to stamp `status = "pending"` rather than
+   attempt tagging — the schema (`SubmissionStatus` in `lib/canon-schema.ts`)
+   treats `status` as always one of `"pending" | "approved" | "rejected"`,
+   never blank, so this closes a real gap: rows created via the form
+   previously had no `status` value at all.
+3. **A human reviewer manually tags** the row: fills in the bibliographic
+   fields (`title`, `itemType`, `creators`, `date`, `tags`, `summary`) by
+   reading the source at `url`, then picks values for the six dimension
+   fields from each field's existing choice list (same as the tagging
+   service would have returned), and sets `tag_confidence` to
+   `"summary-only"` or `"full-text"` depending on how much of the source
+   they actually read.
+4. Reviewer sets `status` to `"approved"` or `"rejected"` (+ `rejection_reason`
+   if rejected).
+5. **"Automated Copying of Approved Rows to Canon" automation** fires on the
+   status change to `"approved"` and creates the matching Canon row (see
+   Part 3b — this one *is* built and working, since it's a same-base
+   record-to-record copy, not an outbound call).
+6. `npm run sync:airtable` (still manual/unscheduled — see Part 4) pulls
+   Canon into the site's JSON file.
 
-1. **Open Automations in Airtable**
-   - Base: LAS Canon
-   - Tab: Automations (left sidebar)
-   - Click "Create automation"
+### Part 3a: Repurpose the record-creation automation
 
-2. **Set the trigger**
-   - **Type:** "When a record is created"
-   - **Scope:** Table "Pending Queue"
-   - Trigger fires on every new row
+The existing "Auto-Tagging on Record Creation in Pending Queue" automation
+has a trigger (record created in Pending Queue) but its webhook action can
+never succeed. Replace the webhook + update-from-response actions with a
+single action:
 
-3. **Add an action: Call a webhook**
-   - **Webhook:** POST to the tagging endpoint (URL TBD)
-   - **Request headers:**
-     ```
-     Content-Type: application/json
-     Authorization: Bearer [TAGGING_SERVICE_API_KEY]
-     ```
-   - **Request body:** (construct using Airtable's dynamic field insertion)
-     ```json
-     {
-       "url": "{url}",
-       "title": "{title}",
-       "summary": "{summary}"
-     }
-     ```
-   - Airtable syntax for field references: `{fieldName}`
+- **Action type:** "Update record"
+- **Record:** the triggering record
+- **Field to set:** `status` → `"pending"`
 
-4. **Add a second action: Update the record**
-   - **Action type:** "Update a record"
-   - **Record:** The triggering record (automatic)
-   - **Fields to update:** (mapped from webhook response)
-     - `system_type` ← response.system_type (array)
-     - `participant_mix` ← response.participant_mix (array)
-     - `observability` ← response.observability (array)
-     - `focus_area` ← response.focus_area (array)
-     - `threat_model` ← response.threat_model (array)
-     - `claim_type` ← response.claim_type (array)
-     - `tag_confidence` ← response.tag_confidence (text)
+This keeps the trigger useful (every new submission gets an explicit,
+schema-valid status) instead of leaving a broken no-op automation running,
+or turning it off and losing the signal entirely.
 
-5. **Handle errors gracefully**
-   - If webhook fails, log the error to Airtable's automation history
-   - Option: Add a third action to set `status` to "pending-auto-tag-failed" or similar, so reviewers know to manually tag
-   - Do not set status automatically; leave it empty so reviewers see it needs review
+### Part 3b: Reviewer worklist
 
-6. **Test the automation**
-   - Create a test record in Pending Queue via the form or manually
-   - Verify the automation runs and either:
-     - (If tagging service is live) dimensions are auto-filled from webhook response
-     - (If placeholder) automation runs and logs to history
+Add a Grid view on Pending Queue filtered to `status = "pending"` so
+reviewers have a clean queue to work from. Quick manual step in the
+Airtable UI (View menu → Create → Grid, then add the filter) — not
+something either AI has a tool to create directly.
 
-### Tagging Service Coordination
-- **BLOCKER:** This step requires the tagging service endpoint (part of Task F implementation)
-- For now, create the Automation with a placeholder webhook URL (e.g., `https://[TBD]/api/tag`)
-- Once the tagging service is deployed, update the webhook URL and test end-to-end
-- Share the expected request/response format above with whoever builds the tagging service
+### Revisit later
+If the tagging service becomes reachable from Airtable (e.g. via a
+Zapier/Make automation platform bridge, or the tagging service switching to
+polling Airtable's API on a schedule instead of Airtable calling out), the
+original webhook design in this section's prior version is still the right
+shape for it — request/response format included. Until then, treat manual
+tagging as the steady-state, not a stopgap.
 
 ---
 
@@ -352,24 +336,26 @@ AIRTABLE_CANON_TABLE_ID=Canon
 
 ## Summary: What You Need to Do
 
-1. **Airtable UI Work** (this document)
-   - [ ] Create intake form on Pending Queue (expose only url + submitted_by)
-   - [ ] Create auto-tagging Automation (POST to tagging service; update record with response)
-   - [ ] Test end-to-end: form → auto-tag → review → promote
+1. **Airtable UI Work**
+   - [x] Create intake form on Pending Queue (expose only url + submitted_by) — done, live
+   - [x] Create promotion Automation (approved → Canon) — done, untested end-to-end
+   - [ ] Repurpose the record-creation Automation to stamp `status = "pending"` (Part 3a) — replaces the dead webhook attempt
+   - [ ] Add a `status = "pending"` filtered Grid view for reviewers (Part 3b)
+   - [ ] Manually tag the existing test row (or delete it) and push it through the full pipeline once to confirm the promotion Automation actually fires
+   - [ ] Fix or delete the test row with `url: "test"` — not a real URL, would pollute Canon if approved as-is
 
 2. **Coordination**
-   - [ ] Get tagging service endpoint from Task F team; update Automation webhook URL
    - [ ] Confirm site-side JSON reading plan with site team
-   - [ ] Schedule sync script once submissions are live (GitHub Actions, Vercel Cron, etc.)
+   - [ ] Decide whether to revisit the auto-tagging webhook later (needs an outbound-call-capable integration — Airtable's own Automations can't do it) or commit to manual tagging long-term
 
 3. **Monitoring**
    - [ ] Watch spec branch for `lib/canon-schema.ts` changes; update Airtable choice lists
-   - [ ] Track Airtable free-plan API quota usage (current: ~12 calls/month, well under 1,000 limit)
+   - [ ] Track Airtable free-plan API quota usage (current: ~1 call/day via the scheduled GitHub Actions sync, well under 1,000/month limit)
 
 4. **Handoff**
-   - Once form is live and automation is tested, the pipeline is self-sustaining (users submit → Airtable processes → reviewers promote → site syncs)
+   - Pipeline is live end-to-end except for the pending → status stamp (Part 3a). Once that's in place: users submit → land as "pending" → reviewer manually tags and approves → auto-promoted to Canon → daily sync picks it up.
 
 ---
 
-**Last updated:** 2026-07-20  
-**Next review:** When Task F tagging service is deployed
+**Last updated:** 2026-07-23  
+**Next review:** After Part 3a is applied and one submission has been run through the full pipeline
