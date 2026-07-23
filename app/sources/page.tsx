@@ -41,15 +41,12 @@ export default function SourcesPage() {
               Contribute
             </p>
             <h2 className="mt-4 max-w-2xl font-serif text-3xl font-semibold leading-tight md:text-4xl">
-              Point us at a source.
+              Submit source.
             </h2>
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-foreground/70">
-              One of the field&apos;s barriers is a lack of data — pure-AI
-              systems are rare, agent presence on mixed systems is hard to
-              spot, and simulation papers rarely publish their runs. If you
-              know a paper, preprint, or report that belongs in the canon,
-              send it over. We&apos;ll pull what metadata we can, a
-              maintainer tags it by hand, and it&apos;s merged in if it fits.
+              Please submit relevant papers. We are looking to grow the list
+              to a thorough coverage of the area, to help identify gaps and
+              introduce new researchers.
             </p>
             <div className="mt-10">
               <ContributeForm />
