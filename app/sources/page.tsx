@@ -26,10 +26,10 @@ export default function SourcesPage() {
             Cross-tabulate the canon.
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-foreground/70">
-            {entries.length} papers, tagged across six closed-set dimensions
-            plus free-text tags. Pick a row and a column, and an empty cell
-            is a gap — either in the literature, or just in this reading
-            list.
+            We have catalogued a variety of papers on LAS through community
+            contributions and our work at Gigascale. We present them here as
+            an early attempt at a survey. Please submit sources you&apos;ve
+            find relevant at the bottom of the page!
           </p>
 
           <div className="mt-12">
