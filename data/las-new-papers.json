@@ -1,5 +1,17 @@
 [
   {
+    "date": "2026-09-09",
+    "counts": {
+      "fetched": 206,
+      "unseen": 206,
+      "screened": 200,
+      "relevant": 0,
+      "kept": 0,
+      "anchors": 20
+    },
+    "papers": []
+  },
+  {
     "date": "2026-09-08",
     "counts": {
       "fetched": 245,
