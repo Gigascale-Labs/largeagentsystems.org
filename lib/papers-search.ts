@@ -1,42 +1,16 @@
 /**
- * Matches a query against the reading list. Supports quoted phrases, AND / OR
- * / NOT, brackets, `field:value`, and wildcards.
+ * Matches a query against the reading list on /papers.
  *
- * `liqe` parses and matches. It is a grammar, so a query it cannot parse
- * raises; `searchPapers` catches that and returns a message instead.
- *
- * The query does not leave the browser. The page holds every paper it lists,
- * so this filters what is already on screen. There is no endpoint, and this
- * site's server never sees a query.
- *
- * Three steps run before liqe matches anything:
- *
- * | Step | What it does |
- * |---|---|
- * | Cap | Truncates the query at `MAX_QUERY_CHARS` |
- * | Clean | Runs `sanitizeText`, which strips invisible and control characters |
- * | Rewrite | Turns each quoted phrase into a case-insensitive regex |
- *
- * The third step corrects a liqe behaviour. Measured: liqe compiles an
- * unquoted term to `/term/ui` and a quoted one to `/term/u`, so
- * `"large agent systems"` matched 0 of 52 papers while `"Large Agent Systems"`
- * matched 1. See `caseInsensitivePhrases`.
+ * The query language, its length cap and its input cleaning live in
+ * `lib/search-query.ts`, shared with the canon search on /survey. This file
+ * holds only what is particular to papers: the record shape, the field names a
+ * person can type, and the arXiv id each match is reported by.
  */
 
-import { filter, parse } from "liqe";
 import type { PaperDay } from "./papers-schema";
-import { sanitizeText } from "./sanitize.ts";
+import { runQuery } from "./search-query.ts";
 
-/**
- * Query length cap. 200 characters holds a query of several clauses.
- *
- * The language includes regular expressions, so an unbounded query can cost
- * unbounded time. That time falls on the browser of whoever typed it, because
- * the match runs client-side. I did not measure the worst-case cost of a
- * pathological regex under this cap; timing `/(a+)+$/` over 480 papers would
- * settle whether 200 is low enough.
- */
-export const MAX_QUERY_CHARS = 200;
+export { MAX_QUERY_CHARS } from "./search-query.ts";
 
 /**
  * One paper as the search matches it. Seven fields, named for what a person
@@ -81,56 +55,6 @@ export function toSearchRecords(days: PaperDay[]): PaperSearchRecord[] {
   );
 }
 
-/**
- * Escapes a phrase for use inside a regular expression body.
- *
- * The set includes `/` as well as the usual metacharacters. liqe reads a regex
- * out of a `/body/flags` string, so an unescaped slash inside a phrase ends the
- * body early and changes what matches.
- */
-function escapeRegex(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
-}
-
-type AstNode = Record<string, unknown>;
-
-/**
- * Rewrites every quoted phrase in the parse tree as a case-insensitive regular
- * expression.
- *
- * liqe compiles an unquoted term to `/term/ui` and a quoted one to `/term/u`.
- * Quoting a phrase therefore makes it case-sensitive, which is not what a
- * person quoting a phrase asks for.
- *
- * The rewrite escapes the phrase and adds the `ui` flags. It leaves wildcard
- * handling alone: liqe expands `*` and `?` only in unquoted terms, and a `?`
- * inside a phrase must stay a literal. `tests/papers-search.test.mts` covers
- * both, with `"What is the limit?"` matching 1 of 3 test papers.
- */
-function caseInsensitivePhrases(node: unknown): void {
-  if (!node || typeof node !== "object") return;
-  const current = node as AstNode;
-
-  const expression = current.expression as AstNode | undefined;
-  if (
-    current.type === "Tag" &&
-    expression?.type === "LiteralExpression" &&
-    expression.quoted === true &&
-    typeof expression.value === "string"
-  ) {
-    current.expression = {
-      type: "RegexExpression",
-      location: expression.location,
-      value: `/${escapeRegex(expression.value)}/ui`,
-    };
-    return;
-  }
-
-  for (const key of ["left", "right", "operand", "expression"]) {
-    caseInsensitivePhrases(current[key]);
-  }
-}
-
 export type SearchOutcome =
   /** No query. The page shows every paper. */
   | { status: "all" }
@@ -149,21 +73,7 @@ export function searchPapers(
   query: string,
   records: PaperSearchRecord[],
 ): SearchOutcome {
-  const cleaned = sanitizeText(query.slice(0, MAX_QUERY_CHARS), MAX_QUERY_CHARS);
-  if (!cleaned) return { status: "all" };
-
-  try {
-    const ast = parse(cleaned);
-    caseInsensitivePhrases(ast);
-    const matched = filter(ast, records);
-    return { status: "matched", ids: new Set(matched.map((row) => row.id)) };
-  } catch {
-    // liqe's message names a column in a string the reader cannot see
-    // ("Syntax error at line 1 column 8"), so this replaces it.
-    return {
-      status: "error",
-      message:
-        "That query did not parse. Check the quotes and brackets are closed.",
-    };
-  }
+  const outcome = runQuery(query, records);
+  if (outcome.status !== "matched") return outcome;
+  return { status: "matched", ids: new Set(outcome.rows.map((row) => row.id)) };
 }
