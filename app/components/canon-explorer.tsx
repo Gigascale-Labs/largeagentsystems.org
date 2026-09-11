@@ -1,7 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useId, useMemo, useState } from "react";
 import type { CanonEntry } from "@/lib/canon-schema";
+import {
+  CANON_SEARCH_FIELDS,
+  searchCanon,
+  toCanonSearchRecords,
+} from "@/lib/canon-search";
 import {
   axisValues,
   DIMENSION_KEYS,
@@ -13,8 +18,18 @@ import {
 } from "@/lib/canon-dimensions";
 import { TABLE_HEAD_ROW, TABLE_ROW, TABLE_WRAP } from "@/lib/table-styles";
 import { bandLabel, scaleBands, shadeFor } from "@/lib/table-scale";
+import { SearchBox } from "./search-box";
 
 const PAGE_SIZE = 10;
+
+const SEARCH_EXAMPLES: ReadonlyArray<{ query: string; means: string }> = [
+  { query: "social", means: "one word, anywhere in an entry" },
+  { query: '"collective intelligence"', means: "that phrase, in any case" },
+  { query: "market OR economy", means: "either word" },
+  { query: "safety NOT language", means: "the first without the second" },
+  { query: "institution:university", means: "one field only" },
+  { query: "(social OR systemic) AND risk", means: "brackets group" },
+];
 
 /**
  * One axis of the cross-table, as a row of buttons.
@@ -76,6 +91,41 @@ export function CanonExplorer({ entries }: { entries: CanonEntry[] }) {
   } | null>(null);
   const [page, setPage] = useState(1);
 
+  // One query per explorer. /survey renders two, and each searches only its
+  // own list; useId keeps the two boxes' label-input pairs apart.
+  const searchId = useId();
+  const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query);
+  const records = useMemo(() => toCanonSearchRecords(entries), [entries]);
+  const outcome = useMemo(
+    () => searchCanon(deferredQuery, records),
+    [deferredQuery, records],
+  );
+  const searching = outcome.status === "matched";
+
+  // The query filters before anything else, so the cross-table and the list
+  // below it count the same papers. A query that did not parse filters
+  // nothing, and the line under the box says why.
+  const searched = useMemo(
+    () =>
+      outcome.status === "matched"
+        ? entries.filter((_, i) => outcome.indexes.has(i))
+        : entries,
+    [entries, outcome],
+  );
+
+  function changeQuery(value: string) {
+    setQuery(value);
+    setPage(1);
+  }
+
+  const searchStatus =
+    outcome.status === "error"
+      ? outcome.message
+      : outcome.status === "all"
+        ? `${entries.length} paper${entries.length === 1 ? "" : "s"}.`
+        : `${searched.length} of ${entries.length} papers matched.`;
+
   // Each axis ends in "Not tagged", which is what puts a paper carrying no
   // value on that dimension onto the table. See lib/canon-dimensions.ts.
   const rowValues = axisValues(dimA);
@@ -88,11 +138,11 @@ export function CanonExplorer({ entries }: { entries: CanonEntry[] }) {
     const grid = axisValues(dimA).map((row) =>
       axisValues(dimB).map(
         (col) =>
-          entries.filter((entry) => inCell(entry, dimA, row, dimB, col)).length,
+          searched.filter((entry) => inCell(entry, dimA, row, dimB, col)).length,
       ),
     );
     return { counts: grid, max: Math.max(0, ...grid.flat()) };
-  }, [entries, dimA, dimB]);
+  }, [searched, dimA, dimB]);
 
   const bands = scaleBands(max);
 
@@ -117,10 +167,10 @@ export function CanonExplorer({ entries }: { entries: CanonEntry[] }) {
   }
 
   const filtered = activeCell
-    ? entries.filter((entry) =>
+    ? searched.filter((entry) =>
         inCell(entry, dimA, activeCell.row, dimB, activeCell.col),
       )
-    : entries;
+    : searched;
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -131,6 +181,18 @@ export function CanonExplorer({ entries }: { entries: CanonEntry[] }) {
 
   return (
     <div>
+      <div className="mb-8">
+        <SearchBox
+          id={searchId}
+          query={query}
+          onQueryChange={changeQuery}
+          status={searchStatus}
+          placeholder={'e.g. "collective intelligence" OR institution:deepmind'}
+          examples={SEARCH_EXAMPLES}
+          fields={CANON_SEARCH_FIELDS}
+        />
+      </div>
+
       {/*
         Both axes as visible buttons rather than <select>. Six dimensions per
         axis is small enough to show at once, and a dropdown hid what the
@@ -242,7 +304,8 @@ export function CanonExplorer({ entries }: { entries: CanonEntry[] }) {
       */}
       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[10px] uppercase tracking-widest text-muted">
         <span>
-          Papers per pair, scaled to this view (max {max}). Fewer is darker.
+          {searching ? "Matching papers" : "Papers"} per pair, scaled to this
+          view (max {max}). Fewer is darker.
         </span>
         <span className="flex items-center gap-1.5">
           <span
@@ -267,7 +330,9 @@ export function CanonExplorer({ entries }: { entries: CanonEntry[] }) {
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">
           {activeCell
             ? `${filtered.length} paper${filtered.length === 1 ? "" : "s"} - ${valueLabel(activeCell.row)} × ${valueLabel(activeCell.col)}`
-            : `All ${filtered.length} papers`}
+            : searching
+              ? `${filtered.length} matching paper${filtered.length === 1 ? "" : "s"}`
+              : `All ${filtered.length} papers`}
         </p>
         <div className={`mt-4 ${TABLE_WRAP}`}>
           <table className="w-full min-w-[40rem] border-collapse text-sm">

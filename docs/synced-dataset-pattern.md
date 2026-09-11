@@ -186,6 +186,17 @@ to `/term/ui` and a quoted one to `/term/u`, so `"large agent systems"` matched
 `caseInsensitivePhrases` rewrites each quoted literal in the parse tree as an
 escaped case-insensitive regex.
 
+The engine — the cap, the cleaning, the phrase rewrite and `liqe` — is
+`lib/search-query.ts`. `/papers` and `/survey` both use it, so a fix there
+reaches both. `lib/papers-search.ts` and `lib/canon-search.ts` hold only each
+page's record shape and field names. The box is `app/components/search-box.tsx`,
+with the fields, examples and input `id` passed in.
+
+`/survey` has two boxes, one per canon list. Each searches only its own list,
+and each filters its cross-table and its paper list together. The canon record
+has no url field: every url contains its host, so an unqualified `arxiv` would
+match every arXiv paper by its address.
+
 ### The two chart views
 
 `/papers` draws one chart slot with two views, switched by the toggle above
