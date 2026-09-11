@@ -61,12 +61,9 @@ export default function SourcesPage() {
                 Methods that transfer.
               </h2>
               <p className="mt-5 max-w-2xl text-base leading-relaxed text-foreground/70">
-                These sources do not study AI agents. Each studies a human or
-                pre-AI system - a market, an institution, a crowd - or a
-                research method. We keep them because their findings and
-                methods carry over to populations of agents. Participant mix
-                is empty throughout: neither value on that dimension describes
-                a system with no AI agents in it.
+                Though these sources study human systems without AI agents,
+                they provide valuable background in humanistic large system
+                settings, and may transfer to agentic systems as well.
               </p>
               <div className="mt-12">
                 <CanonExplorer entries={transferEntries} />
